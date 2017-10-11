@@ -1,0 +1,17 @@
+Ideas for improvements:
+  => Replace terminal_test with cutoff_test (early termination)
+    -> Set depth by time available
+    -> Evaluation performed at cutoff
+  => Heuristic function eval to replace utility function ***
+    -> eval should order terminal nodes like utility
+    -> should not take long! (you're wasting time that could be spent searching)
+    -> For non-terminals, eval strongly correlated with actual chance of winning!
+    -> Idea: weighted linear evaluation to combine n heuristics
+      --> f = w1x1 + w2x2 + ... + wnxn
+    -> must be a monotonic transformation
+  => Opening books and endgame tables
+    -> Do this last if you have time and the insight
+
+General points
+- board will never be all *, gravity always applied when board given
+- total play time: 5 minutes
