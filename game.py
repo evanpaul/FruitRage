@@ -6,6 +6,7 @@ class Cluster:
     def __init__(self, value):
         self.value = value
         self.cells = []
+        self.score = 0
 
     def add_cell(self, y, x):
         self.cells.append((y, x))
@@ -16,7 +17,15 @@ class Cluster:
         g = copy.deepcopy(grid)
         for c in self.cells:
             g[c[0]][c[1]] = "X"
-        print(g)
+        printg(g)
+
+        print("=> Score: %d^2 = %d" % (len(self.cells), self.score))
+        if self.score > 25:
+            for tup in self.cells:
+                print(indices_to_coord(*tup))
+
+    def calculate_score(self):
+        self.score = len(self.cells) ** 2
 
 
 class Neighbor:
@@ -26,7 +35,7 @@ class Neighbor:
 
 
 def read_input(fname):  # -> n, p, t, board
-    ''' Input lines format:
+    '''Input lines format:
     1) integer n: the width and height of the board s.t. 0 < n <= 26
     2) integer p: number of fruit types s.t. 0 < p <= 9
     3) positive float t: remaining time in seconds
@@ -96,7 +105,6 @@ def get_clusters(grid, checked):
     clusters = []
     for i in range(len(grid)):
         for j in range(len(grid[i])):
-            # REVIEW Does scoring care about fruit type i.e. should we ignore 0?
             if not checked[i][j] and grid[i][j] != "*":
                 new_cluster = find_cluster(grid, i, j, checked)
                 clusters.append(new_cluster)
@@ -104,40 +112,50 @@ def get_clusters(grid, checked):
 
 
 def find_cluster(grid, y, x, checked):
-    target_value = grid[y][x]
-    c = Cluster(target_value)
+    fruit_type = grid[y][x]
+    clust = Cluster(fruit_type)
     checked[y][x] = True
-    c.add_cell(y, x)
-    neighbors = get_valid_neighbors(grid, target_value, y, x, checked)
+    clust.add_cell(y, x)
+    neighbors = get_valid_neighbors(grid, fruit_type, y, x, checked)
     # Go through every valid neighbor to find the entirety of the cluster
     while neighbors:
+        # print("-neighbors-")
+        # for nay in neighbors:
+        #     print(indices_to_coord(nay.y, nay.x), end=" ")
+        # print("\n-----------")
         current = neighbors.pop(0)
-        c.add_cell(current.y, current.x)
+        clust.add_cell(current.y, current.x)
         checked[current.y][current.x] = True
         neighbors += get_valid_neighbors(
-            grid, target_value, current.y, current.x, checked)
+            grid, fruit_type, current.y, current.x, checked)
+    clust.calculate_score()  # Determine how much this cluster is worth
+    return clust
 
-    return c
 
-
-def get_valid_neighbors(grid, target_value, y, x, checked):
+def get_valid_neighbors(grid, fruit_type, y, x, checked):
     neighbors = []
     # Up
-    if y - 1 >= 0 and grid[y - 1][x] == target_value and not checked[y - 1][x]:
+    if y - 1 >= 0 and grid[y - 1][x] == fruit_type and not checked[y - 1][x]:
+        checked[y - 1][x] = True
         neighbors.append(Neighbor(y - 1, x))
     # Down
-    if y + 1 < len(grid) and grid[y + 1][x] == target_value and not checked[y + 1][x]:
+    if y + 1 < len(grid) and grid[y + 1][x] == fruit_type and not checked[y + 1][x]:
+        checked[y + 1][x] = True
         neighbors.append(Neighbor(y + 1, x))
     # Left
-    if x - 1 >= 0 and grid[y][x - 1] == target_value and not checked[y][x - 1]:
+    if x - 1 >= 0 and grid[y][x - 1] == fruit_type and not checked[y][x - 1]:
+        checked[y][x - 1] = True
         neighbors.append(Neighbor(y, x - 1))
     # Right
-    if x + 1 < len(grid) and grid[y][x + 1] == target_value and not checked[y][x + 1]:
+    if x + 1 < len(grid) and grid[y][x + 1] == fruit_type and not checked[y][x + 1]:
+        checked[y][x + 1] = True
         neighbors.append(Neighbor(y, x + 1))
 
     return neighbors
 
 # TODO Return board after selecting cluster i.e. removing cluster and applying gravity
+
+
 def select_cluster(grid, cluster):
     pass
 
