@@ -24,9 +24,6 @@ def read_input(fname):  # -> n, p, t, board
     assert(t > 0.0)
     assert(len(temp_grid) == n)
 
-    print(n)
-    print(p)
-    print(t)
     # REVIEW Would forcing asterisk to a magic integer give us computational
     # bonus due to consistent data type? If so, is it even worth it?
     grid = []
@@ -36,30 +33,52 @@ def read_input(fname):  # -> n, p, t, board
             items.append(char)
         grid.append(np.array(items))
     grid = np.array(grid)
-    print(grid)
 
     return n, p, t, grid
 
-# TODO Fix for values > 10
 def printg(grid):
     n = len(grid)
     # A = 65
-    print("  ", end="")
+    print("   ", end="")
     for i in range(n):
         print(chr(65 + i) + " ", end="")
     print("")
     ind = 0
     for row in grid:
         ind += 1
-        print(ind, end=" ")
+        if ind >= 10:
+            print(ind, end=" ")
+        else:
+            print(ind, end="  ")
         for item in row:
             print(item + " ", end="")
         print("")
 
 
+def indices_to_coord(y, x):
+    col = chr(65 + x)
+    row = y + 1
+    coord = "" + col + str(row)
+    return coord
+
+
+def coord_to_indices(coord_string):
+    assert len(coord_string) == 2, "Invalid coordinate string"
+    col = ord(coord_string[1]) - 65
+    row = int(coord_string[2]) - 1
+
+
+def find_clusters(grid):
+    pass
+
+
+def select_cluster(grid, cluster):
+    pass
+
+
 if __name__ == "__main__":
     IN_DIR = "tests/in/"
-    n, p, t, grid = read_input(IN_DIR + "input_5.txt")
+    n, p, t, grid = read_input(IN_DIR + "input_3.txt")
     printg(grid)
 '''
 
