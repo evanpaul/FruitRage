@@ -1,28 +1,26 @@
 import numpy as np
 import copy
-
+import itertools
+import time
 
 class Cluster:
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, fruit_type):
+        self.fruit_type = fruit_type
         self.cells = []
         self.score = 0
+        self.affected_col_indices = set()
 
     def add_cell(self, y, x):
         self.cells.append((y, x))
+        self.affected_col_indices.add(x)
 
-    def display(self, grid):
-        if len(self.cells) == 1:
-            return
+    def _display(self, grid):  # For debugging
         g = copy.deepcopy(grid)
         for c in self.cells:
             g[c[0]][c[1]] = "X"
         printg(g)
 
-        print("=> Score: %d^2 = %d" % (len(self.cells), self.score))
-        if self.score > 25:
-            for tup in self.cells:
-                print(indices_to_coord(*tup))
+        print("[!] Score: %d^2 = %d" % (len(self.cells), self.score))
 
     def calculate_score(self):
         self.score = len(self.cells) ** 2
@@ -69,6 +67,7 @@ def read_input(fname):  # -> n, p, t, board
 
 
 def printg(grid):
+    '''Pretty print grid'''
     n = len(grid)
     # A = 65
     print("   ", end="")
@@ -88,6 +87,7 @@ def printg(grid):
 
 
 def indices_to_coord(y, x):
+    '''Convert coordinate to grid notation e.g. (0, 0) to A1'''
     col = chr(65 + x)
     row = y + 1
     coord = "" + col + str(row)
@@ -95,6 +95,7 @@ def indices_to_coord(y, x):
 
 
 def coord_to_indices(coord_string):
+    '''Convert grid notation to coordinate e.g. A1 to (0, 0)'''
     assert len(coord_string) == 2, "Invalid coordinate string"
     col = ord(coord_string[1]) - 65
     row = int(coord_string[2]) - 1
@@ -102,6 +103,11 @@ def coord_to_indices(coord_string):
 
 # REVIEW THIS NEEDS MORE THOROUGH TESTING
 def get_clusters(grid, checked):
+    '''Search grid for all possible groups of fruits i.e. fruit clusters
+
+    Uses a boolean table (checked) to ensure no fruit is added to more than one
+    cluster
+    '''
     clusters = []
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -112,17 +118,21 @@ def get_clusters(grid, checked):
 
 
 def find_cluster(grid, y, x, checked):
+    '''Finds the entirety of a cluster
+
+    Given the coordinate of a fruit that has not yet been assigned to a cluster,
+    a full cluster is returned after fully searching all of its neighbors. The
+    score of the cluster is calculated at the end such that:
+    cluster.score = (# of fruit in cluster)^2
+    '''
     fruit_type = grid[y][x]
     clust = Cluster(fruit_type)
     checked[y][x] = True
     clust.add_cell(y, x)
+    # print(checked)
     neighbors = get_valid_neighbors(grid, fruit_type, y, x, checked)
     # Go through every valid neighbor to find the entirety of the cluster
     while neighbors:
-        # print("-neighbors-")
-        # for nay in neighbors:
-        #     print(indices_to_coord(nay.y, nay.x), end=" ")
-        # print("\n-----------")
         current = neighbors.pop(0)
         clust.add_cell(current.y, current.x)
         checked[current.y][current.x] = True
@@ -133,6 +143,12 @@ def find_cluster(grid, y, x, checked):
 
 
 def get_valid_neighbors(grid, fruit_type, y, x, checked):
+    '''Finds the valid neighbors of a unassigned fruit
+
+    Every valid (i.e. existant and unassigned), non-diagonal direction is checked.
+    Fruit of matching type adhering to these restrictions are returned in a list
+    that is further searched in a FIFO fashion by find_cluster()
+    '''
     neighbors = []
     # Up
     if y - 1 >= 0 and grid[y - 1][x] == fruit_type and not checked[y - 1][x]:
@@ -153,26 +169,77 @@ def get_valid_neighbors(grid, fruit_type, y, x, checked):
 
     return neighbors
 
-# TODO Return board after selecting cluster i.e. removing cluster and applying gravity
 
+def apply_cluster(grid, cluster):
+    '''Remove a cluster from the grid and apply gravity'''
+    # Remove fruit cluster from grid
+    for coord in cluster.cells:
+        grid[coord[0]][coord[1]] = "*"
 
-def select_cluster(grid, cluster):
-    pass
+    print("[!] Selecting cluster of type %s and size %d" %
+          (best_cluster.fruit_type, len(best_cluster.cells)))
+    cluster._display(grid)
+    # Apply gravity column by column
+    for column in cluster.affected_col_indices:
+        swap = False
+        y = len(grid) - 1
+        # Start from the bottom and swap empty cells with non-empty to apply gravity
+        while y >= 0:
+            if grid[y][column] == "*" and not swap:
+                if y == 0:
+                    break
+                swap = True
+                peak = (y, column)
+
+            elif grid[y][column] != "*" and swap:
+                # Swap
+                grid[peak[0]][peak[1]] = grid[y][column]
+                grid[y][column] = "*"
+                swap = False
+                y = peak[0]
+
+            y -= 1
 
 
 def init_checked_map(n):
+    '''Initialize a boolean table to track cluster assignments'''
     return np.array([np.array([False for x in range(n)]) for y in range(n)])
 
 
 if __name__ == "__main__":
     IN_DIR = "tests/in/"
     n, p, t, grid = read_input(IN_DIR + "input_5.txt")
-    printg(grid)
-    checked = init_checked_map(len(grid))
-    clusters = get_clusters(grid, checked)
 
-    for clust in clusters:
-        clust.display(grid)
+    empty = False
+
+    i = first = second = 0
+    while not empty:
+        i += 1
+
+        checked = init_checked_map(len(grid))
+        clusters = get_clusters(grid, checked)
+        descending_score_clusters = sorted(
+            clusters, key=lambda c: c.score, reverse=True)
+        print("\n[BEFORE]")
+        printg(grid)
+        best_cluster = descending_score_clusters[0]
+        apply_cluster(grid, best_cluster)
+        print("[ClUSTER REMOVED AND GRAVITY APPLIED]")
+        printg(grid)
+
+        if i % 2 != 0:
+            first += best_cluster.score
+        else:
+            second += best_cluster.score
+
+        empty = True
+        for cell in list(itertools.chain.from_iterable(grid)):
+            if cell != "*":
+                empty = False
+                break
+    print("[FINAL SCORES]")
+    print("First player:", first)
+    print("Second player", second)
 
 '''
 
