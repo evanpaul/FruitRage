@@ -114,7 +114,7 @@ def get_clusters(grid, checked):
             if not checked[i][j] and grid[i][j] != "*":
                 new_cluster = find_cluster(grid, i, j, checked)
                 clusters.append(new_cluster)
-    return clusters
+    return sorted(clusters, reverse=True,key=lambda c: c.score)
 
 
 def find_cluster(grid, y, x, checked):
@@ -139,6 +139,7 @@ def find_cluster(grid, y, x, checked):
         neighbors += get_valid_neighbors(
             grid, fruit_type, current.y, current.x, checked)
     clust.calculate_score()  # Determine how much this cluster is worth
+
     return clust
 
 
@@ -170,15 +171,16 @@ def get_valid_neighbors(grid, fruit_type, y, x, checked):
     return neighbors
 
 
-def apply_cluster(grid, cluster):
+def apply_cluster(old_grid, cluster):
     '''Remove a cluster from the grid and apply gravity'''
+    grid = copy.deepcopy(old_grid)
     # Remove fruit cluster from grid
     for coord in cluster.cells:
         grid[coord[0]][coord[1]] = "*"
 
-    print("[!] Selecting cluster of type %s and size %d" %
-          (best_cluster.fruit_type, len(best_cluster.cells)))
-    cluster._display(grid)
+    # print("[!] Selecting cluster of type %s and size %d" %
+    #       (cluster.fruit_type, len(cluster.cells)))
+    # cluster._display(grid)
     # Apply gravity column by column
     for column in cluster.affected_col_indices:
         swap = False
@@ -199,6 +201,7 @@ def apply_cluster(grid, cluster):
                 y = peak[0]
 
             y -= 1
+    return grid
 
 
 def init_checked_map(n):
@@ -223,7 +226,7 @@ if __name__ == "__main__":
         print("\n[BEFORE]")
         printg(grid)
         best_cluster = descending_score_clusters[0]
-        apply_cluster(grid, best_cluster)
+        grid = apply_cluster(grid, best_cluster)
         print("[ClUSTER REMOVED AND GRAVITY APPLIED]")
         printg(grid)
 
