@@ -88,6 +88,7 @@ def printg(grid):
 
 def indices_to_coord(y, x):
     '''Convert coordinate to grid notation e.g. (0, 0) to A1'''
+    assert 0 <= y <= 26 and 0 <= x <= 26, "Invalid coordinates"
     col = chr(65 + x)
     row = y + 1
     coord = "" + col + str(row)
@@ -96,7 +97,7 @@ def indices_to_coord(y, x):
 
 def coord_to_indices(coord_string):
     '''Convert grid notation to coordinate e.g. A1 to (0, 0)'''
-    assert len(coord_string) == 2, "Invalid coordinate string"
+    assert type(coord_string) == "str" and len(coord_string) == 2, "Invalid coordinate string"
     col = ord(coord_string[1]) - 65
     row = int(coord_string[2]) - 1
 
@@ -114,7 +115,27 @@ def get_clusters(grid, checked):
             if not checked[i][j] and grid[i][j] != "*":
                 new_cluster = find_cluster(grid, i, j, checked)
                 clusters.append(new_cluster)
+
+
+
+    # I don't see any reason a single fruit should be selected unless it's the
+    # only option. There's a larger problem with the agents tendency to choose
+    # low values at even depths.
+
+    good_choices = False
+    # REVIEW: Is this a bad idea?
+    for cl in clusters:
+        if cl.score > 1:
+            good_choices = True
+
+    if good_choices:
+        # print("[!] Removing single clusters")
+        clusters = list(filter(lambda c: c.score > 1, clusters))
+    # else:
+    #     print("[!] Better choices don't exist!")
+
     return sorted(clusters, reverse=True,key=lambda c: c.score)
+
 
 
 def find_cluster(grid, y, x, checked):
