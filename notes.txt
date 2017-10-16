@@ -15,3 +15,8 @@ Ideas for improvements:
 General points
 - board will never be all *, gravity always applied when board given
 - total play time: 5 minutes
+
+
+Questions
+Why does fruit type matter?
+Time = 0?

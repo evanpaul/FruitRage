@@ -211,38 +211,40 @@ def init_checked_map(n):
 
 if __name__ == "__main__":
     IN_DIR = "tests/in/"
-    n, p, t, grid = read_input(IN_DIR + "input_5.txt")
-
-    empty = False
-
-    i = first = second = 0
-    while not empty:
-        i += 1
-
-        checked = init_checked_map(len(grid))
-        clusters = get_clusters(grid, checked)
-        descending_score_clusters = sorted(
-            clusters, key=lambda c: c.score, reverse=True)
-        print("\n[BEFORE]")
-        printg(grid)
-        best_cluster = descending_score_clusters[0]
-        grid = apply_cluster(grid, best_cluster)
-        print("[ClUSTER REMOVED AND GRAVITY APPLIED]")
-        printg(grid)
-
-        if i % 2 != 0:
-            first += best_cluster.score
-        else:
-            second += best_cluster.score
-
-        empty = True
-        for cell in list(itertools.chain.from_iterable(grid)):
-            if cell != "*":
-                empty = False
-                break
-    print("[FINAL SCORES]")
-    print("First player:", first)
-    print("Second player", second)
+    n, p, t, grid = read_input(IN_DIR + "input_blank.txt")
+    checked = init_checked_map(len(grid))
+    clusters = get_clusters(grid, checked)
+    print(len(clusters))
+    # empty = False
+    #
+    # i = first = second = 0
+    # while not empty:
+    #     i += 1
+    #
+    #     checked = init_checked_map(len(grid))
+    #     clusters = get_clusters(grid, checked)
+    #     descending_score_clusters = sorted(
+    #         clusters, key=lambda c: c.score, reverse=True)
+    #     print("\n[BEFORE]")
+    #     printg(grid)
+    #     best_cluster = descending_score_clusters[0]
+    #     grid = apply_cluster(grid, best_cluster)
+    #     print("[ClUSTER REMOVED AND GRAVITY APPLIED]")
+    #     printg(grid)
+    #
+    #     if i % 2 != 0:
+    #         first += best_cluster.score
+    #     else:
+    #         second += best_cluster.score
+    #
+    #     empty = True
+    #     for cell in list(itertools.chain.from_iterable(grid)):
+    #         if cell != "*":
+    #             empty = False
+    #             break
+    # print("[FINAL SCORES]")
+    # print("First player:", first)
+    # print("Second player", second)
 
 '''
 
