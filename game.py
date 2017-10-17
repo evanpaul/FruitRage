@@ -72,7 +72,7 @@ def read_input(fname):  # -> n, p, t, board
 
 def save_output(grid, coord):
     with open("output.txt", "w") as f:
-        f.write(coord)
+        f.write(coord + "\n")
 
         for row in grid:
             for cell in row:
