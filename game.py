@@ -4,11 +4,12 @@ import itertools
 import time
 
 class Cluster:
-    def __init__(self, fruit_type):
+    def __init__(self, fruit_type, coord_string):
         self.fruit_type = fruit_type
         self.cells = []
         self.score = 0
         self.affected_col_indices = set()
+        self.coord_string = coord_string
 
     def add_cell(self, y, x):
         self.cells.append((y, x))
@@ -18,12 +19,16 @@ class Cluster:
         g = copy.deepcopy(grid)
         for c in self.cells:
             g[c[0]][c[1]] = "X"
-        printg(g)
 
-        print("[!] Score: %d^2 = %d" % (len(self.cells), self.score))
+        printg(g)
+        print("[!] Selected:", self.coord_string)
+        print("[!] Fruit gathered: %d" % (self.score))
 
     def calculate_score(self):
-        self.score = len(self.cells) ** 2
+        # YIKES this is only calculated at the END
+        # So really what matters is total number of fruit, not fruit per turn
+
+        self.score = len(self.cells) # ** 2
 
 
 class Neighbor:
@@ -65,6 +70,17 @@ def read_input(fname):  # -> n, p, t, board
 
     return n, p, t, grid
 
+def save_output(grid, coord):
+    with open("output.txt", "w") as f:
+        f.write(coord)
+
+        for row in grid:
+            for cell in row:
+                f.write(cell)
+            f.write("\n")
+
+
+
 
 def printg(grid):
     '''Pretty print grid'''
@@ -102,13 +118,17 @@ def coord_to_indices(coord_string):
     row = int(coord_string[2]) - 1
 
 
+def get_score_of_best_cluster(grid):
+    return get_clusters(grid)[0].score
+
 # REVIEW THIS NEEDS MORE THOROUGH TESTING
-def get_clusters(grid, checked):
+def get_clusters(grid):
     '''Search grid for all possible groups of fruits i.e. fruit clusters
 
     Uses a boolean table (checked) to ensure no fruit is added to more than one
     cluster
     '''
+    checked = init_checked_map(len(grid))
     clusters = []
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -147,7 +167,7 @@ def find_cluster(grid, y, x, checked):
     cluster.score = (# of fruit in cluster)^2
     '''
     fruit_type = grid[y][x]
-    clust = Cluster(fruit_type)
+    clust = Cluster(fruit_type, indices_to_coord(y, x))
     checked[y][x] = True
     clust.add_cell(y, x)
     # print(checked)
@@ -230,11 +250,13 @@ def init_checked_map(n):
     return np.array([np.array([False for x in range(n)]) for y in range(n)])
 
 
+
+
 if __name__ == "__main__":
     IN_DIR = "tests/in/"
     n, p, t, grid = read_input(IN_DIR + "input_blank.txt")
-    checked = init_checked_map(len(grid))
-    clusters = get_clusters(grid, checked)
+
+    clusters = get_clusters(grid)
     print(len(clusters))
     # empty = False
     #

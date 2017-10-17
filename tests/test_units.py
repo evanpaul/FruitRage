@@ -14,7 +14,7 @@ def test_indices_to_coord():
     #2
     y = 9
     x = 5
-    assert game.indices_to_coord(y, x) == "J10"
+    assert game.indices_to_coord(y, x) == "F10"
 
     #3
     failed = False
