@@ -83,7 +83,7 @@ def save_alternate_output(grid, coord):
     with open("output.txt", "w") as f:
         f.write(str(len(grid)) + "\n")
         f.write("9\n")
-        f.write("10.0\n")
+        f.write("30.0\n")
 
         for row in grid:
             for cell in row:

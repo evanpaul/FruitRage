@@ -2,7 +2,9 @@ import time
 import game
 # time.process_time() # use this later; this is CPU time for process (NOT
 # wall time)
-
+INF = 99999
+CUT_DEPTH = 3
+PRUNED = 0
 # REVIEW Low depths not pruning?
 
 # TODO:
@@ -45,11 +47,11 @@ class Search_State:
             print("No best action determined!")
             return False
 
-        game.save_alternate_output(game.apply_cluster(
+        game.save_output(game.apply_cluster(
             self.grid, self.selected_cluster), self.selected_cluster.coord_string)
 
 
-def max_val(state, alpha, beta):
+def max_val(state, alpha=-INF, beta=INF):
     global PRUNED
 
     if cutoff_test(state, state.depth):
@@ -68,7 +70,7 @@ def max_val(state, alpha, beta):
     return v
 
 
-def min_val(state, alpha, beta):
+def min_val(state, alpha=-INF, beta=INF):
     global PRUNED
 
     if cutoff_test(state, state.depth):
@@ -105,7 +107,7 @@ def minimax_decision(state):
 
     for act in state.actions:
         child_node = state.results(act, maxFlag=True)
-        v = min_val(child_node, -INF, INF)
+        v = min_val(child_node)
 
         if v > maximum:
             maximum = v
@@ -115,47 +117,11 @@ def minimax_decision(state):
     state.show_choice()
     state.apply_choice()
 
-    if state.selected_cluster:
-        return state.selected_cluster.score
-    else:
-        return 0
-    # print(best_action._display(state.grid))
-# def minimax_decision(state):
-#     print(max_val(state).v)
-def iterative(fname):
-    global INF, CUT_DEPTH, PRUNED, NODES
-    INF = 99999
-    CUT_DEPTH = 1
-    PRUNED = NODES = 0
-
-    n, p, MAX_TIME, grid = game.read_input(fname)
-    ALLOTTED_T = MAX_TIME/2  # !
-    START_T = now = time.process_time()
-    print("[!] Allotted:", ALLOTTED_T)
-
-    while now - START_T < ALLOTTED_T:
-        NODES = 0
-        print("[!] Searching until depth of", CUT_DEPTH)
-
-        root = Search_State(grid)
-        start = time.process_time()
-        score = minimax_decision(root)
-        end = time.process_time()
-        now = time.process_time()
-        used = now - START_T
-
-        print("-------------------------")
-        print("Local time elapsed:", end - start)
-        print("Paths pruned:", PRUNED)
-        print("States considered:", NODES)
-        print("Allotted time used: %f/%f" % (used, ALLOTTED_T))
-
-        CUT_DEPTH += 1
-        # TODO REMOVE
-        if CUT_DEPTH == 5:
-            break
-    return score
 
 if __name__ == "__main__":
-    IN_DIR = "samples/in/"
-    iterative(IN_DIR + "input_5.txt")
+    n, p, MAX_TIME, grid = game.read_input("input.txt")
+    NODES = 0
+
+    root = Search_State(grid)
+    print("[!] Searching until depth of", CUT_DEPTH)
+    minimax_decision(root)
