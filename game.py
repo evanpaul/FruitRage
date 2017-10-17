@@ -79,6 +79,17 @@ def save_output(grid, coord):
                 f.write(cell)
             f.write("\n")
 
+def save_alternate_output(grid, coord):
+    with open("output.txt", "w") as f:
+        f.write(str(len(grid)) + "\n")
+        f.write("9\n")
+        f.write("10.0\n")
+
+        for row in grid:
+            for cell in row:
+                f.write(cell)
+            f.write("\n")
+
 
 
 
@@ -119,7 +130,11 @@ def coord_to_indices(coord_string):
 
 
 def get_score_of_best_cluster(grid):
-    return get_clusters(grid)[0].score
+    clusters = get_clusters(grid)
+    if clusters:
+        return clusters[0].score
+    else:
+        return 0
 
 # REVIEW THIS NEEDS MORE THOROUGH TESTING
 def get_clusters(grid):

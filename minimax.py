@@ -3,10 +3,13 @@ import game
 # time.process_time() # use this later; this is CPU time for process (NOT
 # wall time)
 INF = 99999
-CUT_DEPTH = 2
+CUT_DEPTH = 3
 PRUNED = 0
 # REVIEW Low depths not pruning?
 
+# TODO:
+    # Better eval (consider the state of the board WITHOUT calling get_clusters)
+    # Killer heuristic
 
 class Search_State:
     def __init__(self, grid, value=0, depth=0):
@@ -16,8 +19,19 @@ class Search_State:
         self.depth = depth
         self.selected_cluster = None
 
-    def results(self, action):
-        return Search_State(game.apply_cluster(self.grid, action), action.score, depth=self.depth + 1)
+    def results(self, action, maxFlag):
+        # An action is a Cluster
+        if maxFlag:
+            # print("old(max)=>", self.value)
+            new_score = self.value + action.score
+            # print("new(max)=>", new_score)
+        else:
+            # print("old(min)=>", self.value)
+            new_score = self.value - action.score
+            # print("new(min)=>", new_score)
+
+
+        return Search_State(game.apply_cluster(self.grid, action), value=new_score, depth=self.depth + 1)
 
     def show_choice(self):
         if not self.selected_cluster:
@@ -31,7 +45,8 @@ class Search_State:
             print("No best action determined!")
             return False
 
-        game.save_output(game.apply_cluster(self.grid, self.selected_cluster), self.selected_cluster.coord_string)
+        game.save_alternate_output(game.apply_cluster(
+            self.grid, self.selected_cluster), self.selected_cluster.coord_string)
 
 
 def max_val(state, alpha=-INF, beta=INF):
@@ -42,7 +57,7 @@ def max_val(state, alpha=-INF, beta=INF):
 
     v = -INF
     for act in state.actions:
-        result = max(v, min_val(state.results(act), alpha, beta))
+        result = max(v, min_val(state.results(act, maxFlag=True), alpha, beta))
         v = result
 
         if v >= beta:
@@ -61,7 +76,7 @@ def min_val(state, alpha=-INF, beta=INF):
 
     v = INF
     for act in state.actions:
-        result = min(v, max_val(state.results(act), alpha, beta))
+        result = min(v, max_val(state.results(act, maxFlag=False), alpha, beta))
         v = result
 
         if v <= alpha:
@@ -78,8 +93,7 @@ def cutoff_test(state, depth):
 
 
 def evaluate(state):
-    # TODO Heuristic
-    return game.get_score_of_best_cluster(state.grid)
+    return state.value
 
 
 def minimax_decision(state):
@@ -89,7 +103,7 @@ def minimax_decision(state):
     print(list(map(lambda c: c.score, state.actions)))
 
     for act in state.actions:
-        child_node = state.results(act)
+        child_node = state.results(act, maxFlag=True)
         v = min_val(child_node)
 
         if v > maximum:
@@ -107,7 +121,7 @@ def minimax_decision(state):
 
 if __name__ == "__main__":
     IN_DIR = "samples/in/"
-    n, p, t, grid = game.read_input(IN_DIR + "input_5.txt")
+    n, p, t, grid = game.read_input("output.txt")
     print("Searching until depth of", CUT_DEPTH)
 
     # game.init_checked_map()
