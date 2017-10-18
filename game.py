@@ -136,7 +136,6 @@ def get_score_of_best_cluster(grid):
     else:
         return 0
 
-# REVIEW THIS NEEDS MORE THOROUGH TESTING
 def get_clusters(grid):
     '''Search grid for all possible groups of fruits i.e. fruit clusters
 
@@ -168,6 +167,8 @@ def get_clusters(grid):
         clusters = list(filter(lambda c: c.score > 1, clusters))
     # else:
     #     print("[!] Better choices don't exist!")
+
+
 
     return sorted(clusters, reverse=True,key=lambda c: c.score)
 
