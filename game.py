@@ -25,10 +25,7 @@ class Cluster:
         print("[!] Fruit gathered: %d" % (self.score))
 
     def calculate_score(self):
-        # YIKES this is only calculated at the END
-        # So really what matters is total number of fruit, not fruit per turn
-
-        self.score = len(self.cells) # ** 2
+        self.score = len(self.cells)
 
 
 class Neighbor:
@@ -163,10 +160,7 @@ def get_clusters(grid):
             good_choices = True
 
     if good_choices:
-        # print("[!] Removing single clusters")
         clusters = list(filter(lambda c: c.score > 1, clusters))
-    # else:
-    #     print("[!] Better choices don't exist!")
 
 
 
@@ -235,9 +229,6 @@ def apply_cluster(old_grid, cluster):
     for coord in cluster.cells:
         grid[coord[0]][coord[1]] = "*"
 
-    # print("[!] Selecting cluster of type %s and size %d" %
-    #       (cluster.fruit_type, len(cluster.cells)))
-    # cluster._display(grid)
     # Apply gravity column by column
     for column in cluster.affected_col_indices:
         swap = False
@@ -274,42 +265,3 @@ if __name__ == "__main__":
 
     clusters = get_clusters(grid)
     print(len(clusters))
-    # empty = False
-    #
-    # i = first = second = 0
-    # while not empty:
-    #     i += 1
-    #
-    #     checked = init_checked_map(len(grid))
-    #     clusters = get_clusters(grid, checked)
-    #     descending_score_clusters = sorted(
-    #         clusters, key=lambda c: c.score, reverse=True)
-    #     print("\n[BEFORE]")
-    #     printg(grid)
-    #     best_cluster = descending_score_clusters[0]
-    #     grid = apply_cluster(grid, best_cluster)
-    #     print("[ClUSTER REMOVED AND GRAVITY APPLIED]")
-    #     printg(grid)
-    #
-    #     if i % 2 != 0:
-    #         first += best_cluster.score
-    #     else:
-    #         second += best_cluster.score
-    #
-    #     empty = True
-    #     for cell in list(itertools.chain.from_iterable(grid)):
-    #         if cell != "*":
-    #             empty = False
-    #             break
-    # print("[FINAL SCORES]")
-    # print("First player:", first)
-    # print("Second player", second)
-
-'''
-
-OUTPUT
-1) Selected move as two characters:
-    -> A-Z representing column number (A is leftmost)
-    -> 1-26 (1 is top row)
-2) nxn board after gravity has been applied
-'''
